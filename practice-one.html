@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>practice three js // one</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+        }
+        
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r118/three.min.js" integrity="sha512-ZoEQdcOJ16M20VnLaQxmZlthvLdTbF9CSAAyvZyzru+Em8NEY+7Xy0jdWdUjdOlo7hbPVmaobVBpUF9aqmXENA==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.3.4/gsap.min.js" integrity="sha512-3WGIRFCuTpZhqYujwLp5RtARPkOy3uRtc3RXB31bJ9/i6VH2C66Z0WBV6gHhdhbUIDKFx8yTkLfEjdQM5Wl+ZQ==" crossorigin="anonymous"></script>
+    <script>
+        var scene, camera, renderer;
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+        camera.position.x = 0
+        camera.position.y = 0
+        renderer = new THREE.WebGLRenderer({
+            antiallias: true
+        });
+        renderer.setClearColor("#222222");
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        window.addEventListener("resize", () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        var render = function() {
+            requestAnimationFrame(render);
+            renderer.render(scene, camera);
+        }
+
+        var geoArr, matArr, colorArr;
+
+        var box, circle, cone, cylinder, octahedron;
+        box = new THREE.BoxGeometry();
+        circle = new THREE.CircleGeometry();
+        cone = new THREE.ConeGeometry();
+        cylinder = new THREE.CylinderGeometry();
+        octahedron = new THREE.OctahedronGeometry();
+        geoArr = [
+            box,
+            circle,
+            cone,
+            cylinder,
+            octahedron
+        ];
+
+        colorArr = ["#E0DEE3", "#FFEEDB", "#D2C5D3", "#E0A4BA", "#A4E0CD", "#FFD399", "#85FFFF", "#47FFB3", "#F0A694", "#85FFE9"];
+        var lambert, matcap, phong, physics;
+        lambert = new THREE.MeshLambertMaterial({
+            color: colorArr[Math.floor(Math.random() * colorArr.length)]
+        });
+        phong = new THREE.MeshPhongMaterial({
+            color: colorArr[Math.floor(Math.random() * colorArr.length)]
+        });
+        physical = new THREE.MeshPhysicalMaterial({
+            color: colorArr[Math.floor(Math.random() * colorArr.length)]
+        });
+        matArr = [
+            lambert,
+            phong,
+            physical
+        ];
+
+        var numArr = [2, 0, 1, -1, -2, -3, 3];
+        for (let i = 0; i < 300; i++) {
+            var geometry, material, mesh;
+            geometry = geoArr[Math.floor(Math.random() * geoArr.length)];
+            material = matArr[Math.floor(Math.random() * matArr.length)];
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.x = Math.floor(Math.random() * window.innerWidth / window.innerHeight + numArr[Math.floor(Math.random() * numArr.length)]);
+            mesh.position.y = Math.floor(Math.random() * window.innerWidth / window.innerHeight + numArr[Math.floor(Math.random() * numArr.length)]);
+            mesh.rotation.x = Math.floor(Math.random() * 45)
+            scene.add(mesh);
+        }
+        var light = new THREE.PointLight(0xFFFFFF, 1, 500);
+        // light.position.set(20, 20, 20);
+        light.position.x = 0;
+        light.position.y = 1;
+        light.position.z = 0;
+        scene.add(light);
+        var light = new THREE.PointLight(0xFFFFFF, 1, 500);
+        // light.position.set(20, 20, 20);
+        light.position.x = -3;
+        light.position.y = 0;
+        light.position.z = 10;
+        scene.add(light);
+        var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
+
+        function onMouseMove(event) {
+            event.preventDefault();
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(scene.children, true);
+            for (var i = 0; i < intersects.length; i++) {
+                console.log(intersects[i].object)
+                var tl = gsap.timeline({});
+                tl.to(intersects[i].object.scale, 2, {
+                    x: .1,
+                });
+                tl.to(intersects[i].object.rotation, 1, {
+                    x: Math.PI * 1,
+                    y: 2,
+                }, "<");
+                tl.to(intersects[i].object.position, 3, {
+                    x: numArr[Math.floor(Math.random() * numArr.length)],
+                    y: numArr[Math.floor(Math.random() * numArr.length)],
+                    ease: Expo.easeOut
+                }, "<");
+                // tl.to(intersects[i].object.scale, 1, {
+                //     x: 1,
+                // });
+                // intersects[i].addEventListener("mousemove", () => {
+                //     tl.restart();
+                // })
+            }
+        }
+        render();
+        window.addEventListener("mousemove", onMouseMove);
+    </script>
+</body>
+
+</html>
